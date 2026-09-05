@@ -13,12 +13,13 @@ build:
         - python -m zipfile -e /tmp/poetry-remote-sensing-site.zip /tmp/poetry-remote-sensing-site
 
         - >-
-          python -c 'from pathlib import Path;
-          root=Path("/tmp/poetry-remote-sensing-site/site");
-          link="<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.7.0/style.css\">";
-          [(p.write_text(p.read_text(encoding="utf-8").replace("</head>", link+"\n</head>"), encoding="utf-8")) for p in root.glob("*.html")];
-          css=root/"assets/style.css";
-          css.write_text(css.read_text(encoding="utf-8")+"\n.poetry { font-family: \"LXGW WenKai Lite\", \"Kaiti SC\", STKaiti, KaiTi, serif !important; }\n", encoding="utf-8")'
+          sed -i '1i @import url("https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.7.0/style.css");'
+          /tmp/poetry-remote-sensing-site/site/assets/style.css
+
+        - >-
+          printf '%s\n'
+          '.poetry { font-family: "LXGW WenKai Lite", "Kaiti SC", STKaiti, KaiTi, serif !important; }'
+          >> /tmp/poetry-remote-sensing-site/site/assets/style.css
 
         - mkdir --parents "$READTHEDOCS_OUTPUT/html/"
 
