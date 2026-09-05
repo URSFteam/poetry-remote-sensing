@@ -12,25 +12,17 @@ build:
 
         - python -m zipfile -e /tmp/poetry-remote-sensing-site.zip /tmp/poetry-remote-sensing-site
 
-        - mkdir --parents /tmp/poetry-remote-sensing-site/site/assets/lxgw-wenkai
+        - mkdir --parents /tmp/poetry-remote-sensing-site/site/assets/fonts
 
-        - curl -L --fail --silent --show-error https://registry.npmjs.org/lxgw-wenkai-lite-webfont/-/lxgw-wenkai-lite-webfont-1.7.0.tgz -o /tmp/lxgw-wenkai.tgz
+        - curl -L --fail --silent --show-error https://raw.githubusercontent.com/lxgw/LxgwWenKai-Lite/main/fonts/TTF/LXGWWenKaiLite-Regular.ttf -o /tmp/poetry-remote-sensing-site/site/assets/fonts/LXGWWenKaiLite-Regular.ttf
 
-        - tar -xzf /tmp/lxgw-wenkai.tgz -C /tmp/poetry-remote-sensing-site/site/assets/lxgw-wenkai --strip-components=1
-
-        - >-
-          printf '%s\n'
-          '@import url("./lxgw-wenkai/lxgwwenkailite-regular.css");'
-          > /tmp/new-style.css
-
-        - cat /tmp/poetry-remote-sensing-site/site/assets/style.css >> /tmp/new-style.css
+        - curl -L --fail --silent --show-error https://raw.githubusercontent.com/lxgw/LxgwWenKai-Lite/main/OFL.txt -o /tmp/poetry-remote-sensing-site/site/assets/fonts/OFL-LXGW-WenKai-Lite.txt
 
         - >-
           printf '%s\n'
-          '.poetry { font-family: "LXGW WenKai Lite", "Kaiti SC", STKaiti, KaiTi, serif !important; }'
-          >> /tmp/new-style.css
-
-        - mv /tmp/new-style.css /tmp/poetry-remote-sensing-site/site/assets/style.css
+          '@font-face { font-family: "PoetryKaiWeb"; src: url("./fonts/LXGWWenKaiLite-Regular.ttf") format("truetype"); font-style: normal; font-weight: 400; font-display: swap; }'
+          '.poetry { font-family: "PoetryKaiWeb", serif !important; }'
+          >> /tmp/poetry-remote-sensing-site/site/assets/style.css
 
         - mkdir --parents "$READTHEDOCS_OUTPUT/html/"
 
