@@ -16,6 +16,32 @@ site = Path(sys.argv[1]).resolve()
 if not site.exists():
     raise SystemExit(f"Site directory does not exist: {site}")
 
+# ------------------------------------------------------------
+# 修正文中的已知错字
+# ------------------------------------------------------------
+
+page = site / "chapter-1.html"
+
+old_text = '据考证，现代意义上的“遥感”一次'
+new_text = '据考证，现代意义上的“遥感”一词'
+
+source = page.read_text(encoding="utf-8")
+
+count = source.count(old_text)
+
+if count == 1:
+    page.write_text(
+        source.replace(old_text, new_text, 1),
+        encoding="utf-8"
+    )
+    print("Corrected typo in chapter-1.html: 一次 -> 一词")
+elif count == 0:
+    print("Typo text not found in chapter-1.html; no replacement made.")
+else:
+    raise SystemExit(
+        f"Found {count} matching passages in chapter-1.html; "
+        "refusing automatic replacement."
+    )
 
 # ------------------------------------------------------------
 # 1. 找出所有 class="poetry" 中实际使用的文字
