@@ -12,17 +12,9 @@ build:
 
         - python -m zipfile -e /tmp/poetry-remote-sensing-site.zip /tmp/poetry-remote-sensing-site
 
-        - mkdir --parents /tmp/poetry-remote-sensing-site/site/assets/fonts
+        - python -m pip install --quiet fonttools brotli
 
-        - curl -L --fail --silent --show-error https://raw.githubusercontent.com/lxgw/LxgwWenKai-Lite/main/fonts/TTF/LXGWWenKaiLite-Regular.ttf -o /tmp/poetry-remote-sensing-site/site/assets/fonts/LXGWWenKaiLite-Regular.ttf
-
-        - curl -L --fail --silent --show-error https://raw.githubusercontent.com/lxgw/LxgwWenKai-Lite/main/OFL.txt -o /tmp/poetry-remote-sensing-site/site/assets/fonts/OFL-LXGW-WenKai-Lite.txt
-
-        - >-
-          printf '%s\n'
-          '@font-face { font-family: "PoetryKaiWeb"; src: url("./fonts/LXGWWenKaiLite-Regular.ttf") format("truetype"); font-style: normal; font-weight: 400; font-display: swap; }'
-          '.poetry { font-family: "PoetryKaiWeb", serif !important; }'
-          >> /tmp/poetry-remote-sensing-site/site/assets/style.css
+        - python prepare_poetry_font.py /tmp/poetry-remote-sensing-site/site
 
         - mkdir --parents "$READTHEDOCS_OUTPUT/html/"
 
