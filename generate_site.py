@@ -15,7 +15,7 @@ from docx.text.run import Run
 ROOT = Path(__file__).resolve().parent
 SOURCE = ROOT.parent / "诗词遥感-草稿 - 小修版-诗词楷体版.docx"
 FOREWORD_SOURCE = ROOT.parent / "诗词遥感-序言-陈镜明.docx"
-FOREWORD_PAGE = ("chen-preface.html", "序言（陈镜明）")
+FOREWORD_PAGE = ("chen-preface.html", "序言")
 SITE = ROOT / "site"
 ASSETS = SITE / "assets"
 MEDIA = ASSETS / "media"
