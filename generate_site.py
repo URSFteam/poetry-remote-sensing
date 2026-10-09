@@ -14,6 +14,8 @@ from docx.text.run import Run
 
 ROOT = Path(__file__).resolve().parent
 SOURCE = ROOT.parent / "诗词遥感-草稿 - 小修版-诗词楷体版.docx"
+FOREWORD_SOURCE = ROOT.parent / "诗词遥感-序言-陈镜明.docx"
+FOREWORD_PAGE = ("chen-preface.html", "序言（陈镜明）")
 SITE = ROOT / "site"
 ASSETS = SITE / "assets"
 MEDIA = ASSETS / "media"
@@ -34,6 +36,8 @@ PAGES = [
 
 
 def reset_output() -> None:
+    if SITE.is_symlink() or SITE.resolve() != ROOT.resolve() / "site":
+        raise RuntimeError("Refusing to replace an unexpected output directory")
     if SITE.exists():
         shutil.rmtree(SITE)
     MEDIA.mkdir(parents=True)
@@ -176,7 +180,7 @@ def render_paragraph(paragraph, index: int, page_start: int, image_map: dict[str
 
 
 def nav_html(active: str) -> str:
-    items = [('index.html', '封面与目录')] + [(filename, title) for _, filename, title in PAGES]
+    items = [('index.html', '封面与目录'), FOREWORD_PAGE] + [(filename, title) for _, filename, title in PAGES]
     rows = []
     for filename, title in items:
         current = ' aria-current="page" class="active"' if filename == active else ""
@@ -335,7 +339,19 @@ def build() -> None:
     image_map = extract_images(doc)
 
     generated_pages: list[dict[str, object]] = []
-    filenames = ["index.html"] + [entry[1] for entry in PAGES]
+    filenames = ["index.html", FOREWORD_PAGE[0]] + [entry[1] for entry in PAGES]
+    foreword = Document(FOREWORD_SOURCE)
+    if foreword.tables or any("image" in rel.reltype for rel in foreword.part.rels.values()):
+        raise RuntimeError("The foreword contains tables or images that need explicit conversion")
+    foreword_body = "\n".join(
+        render_paragraph(paragraph, index, 0, {})
+        for index, paragraph in enumerate(foreword.paragraphs)
+    )
+    (SITE / FOREWORD_PAGE[0]).write_text(
+        shell(FOREWORD_PAGE[1], FOREWORD_PAGE[0], foreword_body, "index.html", PAGES[0][1]),
+        encoding="utf-8",
+    )
+    generated_pages.append({"file": FOREWORD_PAGE[0], "source": str(FOREWORD_SOURCE), "title": FOREWORD_PAGE[1]})
     for page_no, (start, filename, display_title) in enumerate(PAGES, start=1):
         end = PAGES[page_no][0] if page_no < len(PAGES) else len(doc.paragraphs)
         content = []
@@ -343,8 +359,9 @@ def build() -> None:
             block = render_paragraph(doc.paragraphs[index], index, start, image_map)
             if block:
                 content.append(block)
-        prev_filename = filenames[page_no - 1]
-        next_filename = filenames[page_no + 1] if page_no + 1 < len(filenames) else None
+        position = filenames.index(filename)
+        prev_filename = filenames[position - 1]
+        next_filename = filenames[position + 1] if position + 1 < len(filenames) else None
         (SITE / filename).write_text(
             shell(display_title, filename, "\n".join(content), prev_filename, next_filename),
             encoding="utf-8",
@@ -358,12 +375,13 @@ def build() -> None:
         else '<div><h1>诗词遥感</h1><p>电子版</p></div>'
     )
     toc_rows = "\n".join(
-        f'<li><a href="{filename}">{html.escape(title)}</a></li>' for _, filename, title in PAGES
+        f'<li><a href="{filename}">{html.escape(title)}</a></li>'
+        for filename, title in [FOREWORD_PAGE] + [(filename, title) for _, filename, title in PAGES]
     )
     home_body = f'''<section class="cover">{cover_html}</section>
 <section class="toc"><h2>目录</h2><ol>{toc_rows}</ol></section>'''
     (SITE / "index.html").write_text(
-        shell("封面与目录", "index.html", home_body, None, PAGES[0][1]), encoding="utf-8"
+        shell("封面与目录", "index.html", home_body, None, FOREWORD_PAGE[0]), encoding="utf-8"
     )
     (ASSETS / "style.css").write_text(STYLE.strip() + "\n", encoding="utf-8")
     (ASSETS / "site.js").write_text(SCRIPT.strip() + "\n", encoding="utf-8")
